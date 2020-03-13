@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sch="http://csssr.com/schemas">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <sch:AddEmployeesToCompanyRequest>
+      <sch:CompanyId>TestCompanyId</sch:CompanyId>
+      <sch:EmployeeId>TestEmployeeId</sch:EmployeeId>
+    </sch:AddEmployeesToCompanyRequest>
+  </soapenv:Body>
+</soapenv:Envelope>

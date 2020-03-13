@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sch="http://csssr.com/schemas">
+  <soapenv:Header/>
+  <soapenv:Body>
+    <sch:AddEmployeeRequest>
+      <sch:FirstName>AutotestFirstName</sch:FirstName>
+      <sch:LastName>AutotestLastName</sch:LastName>
+      <sch:MiddleName>AutotestMiddleName</sch:MiddleName>
+    </sch:AddEmployeeRequest>
+  </soapenv:Body>
+</soapenv:Envelope>

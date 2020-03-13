@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="AddCompanyRequest.xml" />
+    <None Remove="AddEmployeeRequest.xml" />
+    <None Remove="AddEmployeeToCompanyRequest.xml" />
+    <None Remove="AddMultipleEmployeesToCompanyRequest.xml" />
+    <None Remove="GetCompanyRequest.xml" />
+    <None Remove="UpdateEmployeeRequest.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="SoapXmls\UpdateEmployeeRequest.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SoapXmls\GetCompanyRequest.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SoapXmls\AddMultipleEmployeesToCompanyRequest.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SoapXmls\AddEmployeeToCompanyRequest.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SoapXmls\AddEmployeeRequest.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SoapXmls\AddCompanyRequest.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="nunit" Version="3.12.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.15.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.4.0" />
+    <PackageReference Include="RestSharp" Version="106.10.1" />
+  </ItemGroup>
+
+</Project>
