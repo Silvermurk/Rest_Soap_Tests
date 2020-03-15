@@ -1,29 +1,20 @@
-﻿using Newtonsoft.Json;
-using NUnit.Framework;
-using RestSharp;
+﻿using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
-using System.Reflection;
-using System.Xml;
-using System.Net.Http;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Xml.Serialization;
 
 namespace RestApi
 {
     /// <summary>
-    /// Somewhy SOAP response is not a XML serealizable format. 
+    /// Somewhy SOAP response is not a XML serealizable format.
     /// So had to make addon to get direct SOAP response and
     /// parse it with RegEx.
     /// Skipped on negative tests, not to overexhaust project with XMLs
     /// </summary>
     [Parallelizable(ParallelScope.Children)]
-    class SOAPTests
+    internal class SOAPTests
     {
         private string testPrefix = "Autotest_";
         private string url = @"https://soap.qa-test.csssr.com/ws/soap.wsdl";
@@ -46,8 +37,8 @@ namespace RestApi
             updateEmployeeRequest = File.ReadAllText(@"SoapXmls\UpdateEmployeeRequest.xml");
         }
 
-
         [Test]
+        [Order(10)]
         public void Test_10_AddCompany_ShouldBeOk()
         {
             //Arrange
@@ -67,6 +58,7 @@ namespace RestApi
         }
 
         [Test]
+        [Order(20)]
         public void Test_20_AddEmployee_ShouldBeOk()
         {
             //Arrange
@@ -85,6 +77,7 @@ namespace RestApi
         }
 
         [Test]
+        [Order(30)]
         public void Test_30_AddEmployeeToCompany_ShouldBeOk()
         {
             //Arrange
@@ -113,6 +106,7 @@ namespace RestApi
         }
 
         [Test]
+        [Order(40)]
         public void Test_40_GetCompany_ShouldBeOk()
         {
             //Arrange
@@ -139,6 +133,7 @@ namespace RestApi
         /// Will fail last assert bevause API allweys returns one employee per company
         /// </summary>
         [Test]
+        [Order(50)]
         public void Test_50_AddMultipleEmployeesToCompany_ShouldBeOk()
         {
             //Arrange
@@ -187,6 +182,7 @@ namespace RestApi
         /// Will fail last assert because of UpdatedAt never changes
         /// </summary>
         [Test]
+        [Order(60)]
         public void Test_60_UpdateEmployee_ShouldBeOk()
         {
             //Arrange
@@ -229,7 +225,14 @@ namespace RestApi
             Assert.IsTrue(Convert.ToDateTime(AddEmployeeResponseUpdatedAt.Single().Value) < Convert.ToDateTime(UpdateEmployeeResponseUpdatedAt.Single().Value));
         }
 
-
+        /// <summary>
+        /// Cs overlap to use xml files as soap envelopes and 
+        /// not work throu streams and XML serialization like with RESTs
+        /// </summary>
+        /// <param name="url"></param> endpoint url
+        /// <param name="method"></param> SOAP method to execute
+        /// <param name="soapEnvelope"></param> XML envelope read from file
+        /// <returns></returns>
         private string GetResponseSoap(string url, string method, string soapEnvelope)
         {
             url = url.Trim('/').Trim('\\');

@@ -1,13 +1,14 @@
-using Newtonsoft.Json;
-using NUnit.Framework;
-using RestSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-
 namespace RestApi
 {
+    using Newtonsoft.Json;
+    using NUnit.Framework;
+    using RestSharp;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Net;
+    using System.Threading.Tasks;
+
     /// <summary>
     /// REST Api tests, include basic negatives.
     /// </summary>
@@ -19,6 +20,10 @@ namespace RestApi
         private List<int> CreatedEntitys;
         private RestRequest getRequest;
         private RestRequest postRequest;
+        private int retrysToFail = 10;
+        private TimeSpan timeBetweenRetrys = TimeSpan.FromSeconds(1);
+        private bool forceDbCleanup = true;
+        private int forcedDbCleanupRetrys = 30;
 
         [OneTimeSetUp]
         public void OneTimeSetup()
@@ -90,7 +95,7 @@ namespace RestApi
                 };
             }
 
-            
+
             postRequest.AddJsonBody(testResultPostRequestDto);
 
             //Act
@@ -267,24 +272,106 @@ namespace RestApi
         }
 
         /// <summary>
+        /// Forced 10 retrys to overcome GetById problems
+        /// </summary>
+        [Test]
+        [Order(70)]
+        public void Test_70_AssumeRegressTesting()
+        {
+            var testResultPostRequestDto = new TestResultPostRequestDto
+            {
+                id = 900,
+                fullName = testPrefix + "AutoTestMan",
+                gender = "M",
+                birthDate = "2019-01-01",
+                city = "BugLand",
+                mainSkill = "ForcedDebug",
+                phone = "911",
+            };
+
+            postRequest.AddJsonBody(testResultPostRequestDto);
+
+            //Act
+            var postResponse = client.Execute<TestResult>(postRequest);
+            var postResponseDeserialized = JsonConvert.DeserializeObject<TestResult>(postResponse.Content);
+            Assert.AreEqual(true, postResponse.IsSuccessful);
+            CreatedEntitys.Add(postResponseDeserialized.id);
+
+            var getResponse = client.Execute<TestResult>(getRequest);
+            var getResponseDeserialized = JsonConvert.DeserializeObject<List<TestResult>>(getResponse.Content);
+
+            IRestResponse<TestResult> getByIdResponse = default(IRestResponse<TestResult>);
+
+            IRestResponse<TestResult> GetByIdResponse()
+            {
+                var getByIdRequest = new RestRequest($"/superheroes/{postResponseDeserialized.id}", Method.GET);
+                var getByIdResponse = client.Execute<TestResult>(getByIdRequest);
+                return getByIdResponse;
+            }
+
+            getByIdResponse = RetryHelper.Do(() => GetByIdResponse(), timeBetweenRetrys, retrysToFail);
+
+            var getByIdResponseDeserialized = JsonConvert.DeserializeObject<TestResult>(getByIdResponse.Content);
+
+            //Assert
+            Assert.AreEqual(postResponseDeserialized.id, getByIdResponseDeserialized.id);
+        }
+
+
+        /// <summary>
         /// Clean up after tests, to remove trash from DB
         /// Uneffective due to DELETE not working properly
         /// </summary>
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
-            //foreach (var Entity in CreatedEntitys)
-            //{
-            //    var deleteRequest = new RestRequest($"/superheroes/{Entity}", Method.DELETE);
-            //    var deleteRequestResponse = client.Execute<TestResult>(deleteRequest);
-            //    Assert.AreEqual(true, deleteRequestResponse.IsSuccessful);
-            //}
+            if (forceDbCleanup)
+            {
+                ForcedDbCleanupAndAssert();
+            }
+            else
+            {
+                DbCleanupAndAssert();
+            }
+        }
 
-            //var getRequest = new RestRequest("/superheroes", Method.GET);
-            //var getResponse = client.Execute<List<TestResult>>(getRequest);
-            //var getResponseDeserialized = JsonConvert.DeserializeObject<List<TestResult>>(getResponse.Content);
+        private void ForcedDbCleanupAndAssert()
+        {
+            var getResponse = client.Execute<List<TestResult>>(getRequest);
+            List<TestResult> getResponseDeserialized = JsonConvert.DeserializeObject<List<TestResult>>(getResponse.Content);
 
-            //Assert.AreEqual(false, getResponseDeserialized.Any(x => x.fullName.Contains(testPrefix)));
+            foreach (var entity in getResponseDeserialized)
+            {
+                if(entity.fullName.Contains(testPrefix))
+                {
+                    for (int i = 0; i < forcedDbCleanupRetrys; i++)
+                    {
+                        var deleteRequest = new RestRequest($"/superheroes/{entity.id}", Method.DELETE);
+                        var deleteRequestResponse = client.Execute<TestResult>(deleteRequest);
+                        Assert.AreEqual(true, deleteRequestResponse.IsSuccessful);
+                    }
+                }
+            }
+
+            var FinalGetResponse = client.Execute<List<TestResult>>(getRequest);
+            var FinalGetResponseDeserialized = JsonConvert.DeserializeObject<List<TestResult>>(getResponse.Content);
+
+            Assert.AreEqual(false, getResponseDeserialized.Any(x => x.fullName.Contains(testPrefix)));
+        }
+
+        private void DbCleanupAndAssert()
+        {
+            foreach (var Entity in CreatedEntitys)
+            {
+                var deleteRequest = new RestRequest($"/superheroes/{Entity}", Method.DELETE);
+                var deleteRequestResponse = client.Execute<TestResult>(deleteRequest);
+                Assert.AreEqual(true, deleteRequestResponse.IsSuccessful);
+            }
+
+            var getResponse = client.Execute<List<TestResult>>(getRequest);
+            var getResponseDeserialized = JsonConvert.DeserializeObject<List<TestResult>>(getResponse.Content);
+
+            Assert.AreEqual(false, getResponseDeserialized.Any(x => x.fullName.Contains(testPrefix)));
         }
     }
 }
