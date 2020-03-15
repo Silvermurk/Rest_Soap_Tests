@@ -22,7 +22,7 @@ namespace RestApi
         private int retrysToFail = 10;
         private TimeSpan timeBetweenRetrys = TimeSpan.FromSeconds(1);
         private bool forceDbCleanup = false;
-        private int forcedDbCleanupRetrys = 30;
+        private int forcedDbCleanupRetrys = 20;
 
         [OneTimeSetUp]
         public void OneTimeSetup()
@@ -361,7 +361,7 @@ namespace RestApi
 
             var FinalGetResponse = client.Execute<List<TestResult>>(getRequest);
             var FinalGetResponseDeserialized = JsonConvert.DeserializeObject<List<TestResult>>(getResponse.Content);
-
+            Console.WriteLine(FinalGetResponseDeserialized.Where(x => x.fullName.Contains(testPrefix)));
             Assert.AreEqual(false, getResponseDeserialized.Any(x => x.fullName.Contains(testPrefix)));
         }
 
