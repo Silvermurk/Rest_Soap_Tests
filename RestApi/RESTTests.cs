@@ -7,12 +7,11 @@ namespace RestApi
     using System.Collections.Generic;
     using System.Linq;
     using System.Net;
-    using System.Threading.Tasks;
 
     /// <summary>
     /// REST Api tests, include basic negatives.
     /// </summary>
-    [Parallelizable(ParallelScope.Children)]
+    [Parallelizable(ParallelScope.All)]
     public class RESTTests
     {
         private RestClient client;
@@ -22,7 +21,7 @@ namespace RestApi
         private RestRequest postRequest;
         private int retrysToFail = 10;
         private TimeSpan timeBetweenRetrys = TimeSpan.FromSeconds(1);
-        private bool forceDbCleanup = true;
+        private bool forceDbCleanup = false;
         private int forcedDbCleanupRetrys = 30;
 
         [OneTimeSetUp]
@@ -306,7 +305,14 @@ namespace RestApi
             {
                 var getByIdRequest = new RestRequest($"/superheroes/{postResponseDeserialized.id}", Method.GET);
                 var getByIdResponse = client.Execute<TestResult>(getByIdRequest);
-                return getByIdResponse;
+                if(getByIdResponse.StatusCode == HttpStatusCode.BadRequest)
+                {
+                    throw new HttpListenerException(400, $"REST fault on GetById for superhero id {postResponseDeserialized}");
+                }
+                else
+                {
+                    return getByIdResponse;
+                }
             }
 
             getByIdResponse = RetryHelper.Do(() => GetByIdResponse(), timeBetweenRetrys, retrysToFail);
