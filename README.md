@@ -1,2 +1,3 @@
 # Rest_Soap_Tests
- Test work for web tests
+ Просто клонируйте репозиторий и откройте sln в Visual Studio.
+ Код везде комментирован, тесты выполняются из TestExplorerа.
